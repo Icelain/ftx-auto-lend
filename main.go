@@ -9,6 +9,7 @@ import (
 	"github.com/akamensky/argparse"
 	"github.com/avast/retry-go"
 	"github.com/grishinsana/goftx"
+	"github.com/grishinsana/goftx/models"
 	"github.com/robfig/cron/v3"
 	"github.com/shopspring/decimal"
 	"go.uber.org/ratelimit"
@@ -102,10 +103,13 @@ func main() {
 }
 
 func updateLendingOffer(coin string, amount decimal.Decimal, minRate decimal.Decimal) (err error) {
+
+	NewMinRate, _ := minRate.Float64()
+
 	err = retry.Do(
 		func() error {
 			limiter.Take()
-			err := client.SubmitLendingOffer(coin, amount, minRate)
+			err := client.SubmitLendingOffer(&models.LendingOfferPayload{Coin: coin, Rate: NewMinRate, Size: amount})
 
 			if err != nil {
 				fmt.Printf("%+v\n", err)
